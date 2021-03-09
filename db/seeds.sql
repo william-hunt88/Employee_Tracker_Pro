@@ -13,16 +13,16 @@ VALUES
 
   INSERT INTO role (title, salary, department_id)
   VALUES
-  ('Production Manager', 50,000, 1)
-  ('FOH Audio', 45,000, 1),
-  ('Monitors Audio', 40,000, 1),
-  ('A2', 35,000, 1),
-  ('Show Rep', 45,000, 2),
-  ('Stage Manager', 40,000, 2),
-  ('Hospitality', 35,000, 2),
-  ('Booking Agent', 50,000, 3),
-  ('Venue Manger', 60,000, 3),
-  ('Business Mangaer', 70,000, 3);
+  ('Production Manager', 50000, 1),
+  ('FOH Audio', 45000, 1),
+  ('Monitors Audio', 40000, 1),
+  ('A2', 35000, 1),
+  ('Show Rep', 45000, 2),
+  ('Stage Manager', 40000, 2),
+  ('Hospitality', 35000, 2),
+  ('Booking Agent', 50000, 3),
+  ('Venue Manger', 60000, 3),
+  ('Business Manager', 70000, 3);
 
   INSERT INTO department (name)
   VALUES

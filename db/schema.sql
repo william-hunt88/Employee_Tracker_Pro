@@ -3,7 +3,7 @@ CREATE DATABASE employees_db;
 USE employees_db;
 
 CREATE TABLE employees (
-    id INTEGER(11) AUTO_INCREMENT NOT NULL,
+    id INTEGER(11) AUTO_INCREMENT NOT NULL PRIMARY KEY,
     first_name VARCHAR(30) NOT NULL,
     last_name VARCHAR(30) NOT NULL,
     role_id INTEGER UNSIGNED,
@@ -11,15 +11,15 @@ CREATE TABLE employees (
 );
 
 CREATE TABLE role (
-    id INTEGER(11) AUTO_INCREMENT NOT NULL,
+    id INTEGER(11) AUTO_INCREMENT NOT NULL PRIMARY KEY,
     title VARCHAR(30),
-    salary DECIMAL (6),
+    salary DECIMAL,
     department_id INTEGER
 );
 
 CREATE TABLE department (
-    id INTEGER(11) AUTO_INCREMENT NOT NULL,
-    name VARCHAR(30)
+    id INTEGER(11) AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    name VARCHAR(90)
 );
 
 

@@ -1,4 +1,28 @@
 const inquirer = require('inquirer')
+// require module that will deal with the database
+const dbCall = require("./utils/dbCalls.js")
+
+
+function initialPrompt() {
+    inquirer.prompt([{
+        type: "checkbox",
+        name: "initial",
+        message: "What would you like to do?",
+        choices: [
+            "view all departments", 
+            "view all roles", 
+            "view all employees",
+            "add a department",
+            "add a role", 
+            "add an employee", 
+            "update an employee role"
+        ]
+    }]).then(answers => {
+        dbCall(answers);
+    })
+};
+
+initialPrompt();
 
 
 
