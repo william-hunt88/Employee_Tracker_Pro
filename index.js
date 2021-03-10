@@ -1,33 +1,66 @@
-const inquirer = require('inquirer')
+const inquirer = require("inquirer");
 // require module that will deal with the database
-const dbCall = require("./utils/dbCalls.js")
+const myFunctions = require("./utils/dbCalls.js");
 
 
 function initialPrompt() {
-    inquirer.prompt([{
-        type: "checkbox",
+  inquirer
+    .prompt([
+      {
+        type: "list",
         name: "initial",
         message: "What would you like to do?",
         choices: [
-            "view all departments", 
-            "view all roles", 
-            "view all employees",
-            "add a department",
-            "add a role", 
-            "add an employee", 
-            "update an employee role"
-        ]
-    }]).then(answers => {
-        dbCall(answers);
+          "view all departments",
+          "view all roles",
+          "view all employees",
+          "add a department",
+          "add a role",
+          "add an employee",
+          "update an employee role",
+        ],
+      },
+    ])
+    .then((answers) => {
+      switch (answers.initial) {
+        case "view all departments":
+          myFunctions.dbCall(answers.initial);
+          break;
+        case "view all employees":
+          myFunctions.dbCall(answers.initial);
+          break;
+        case "view all roles":
+          myFunctions.dbCall(answers.initial);
+          break;
+        case "add a department":
+          departmentAddPrompt();
+          break;
+        case "add a role":
+          roleAddPrompt();
+          break;
+        case "add an employee":
+          employeeAddPrompt();
+          break;
+        case "update an employee role":
+          updateEmployeePrompt();
+          break;
+      }
+    });
+}
+
+function departmentAddPrompt() {
+  inquirer
+    .prompt({
+      type: "input",
+      name: "departmentAdd",
+      message: "What department would you like to add?",
     })
-};
+    .then((answer) => {
+      myFunctions.addDepartmentDbCall(answer.departmentAdd);
+    });
+}
 
 initialPrompt();
-
-
-
-
-
 
 // GIVEN a command-line application that accepts user input
 // WHEN I start the application
@@ -45,4 +78,4 @@ initialPrompt();
 // WHEN I choose to add an employee
 // THEN I am prompted to enter the employee’s first name, last name, role, and manager and that employee is added to the database
 // WHEN I choose to update an employee role
-// THEN I am prompted to select an employee to update and their new role and this information is updated in the database 
+// THEN I am prompted to select an employee to update and their new role and this information is updated in the database
