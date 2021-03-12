@@ -1,21 +1,6 @@
 const inquirer = require("inquirer");
 const cTable = require("console.table");
-const mysql = require("mysql2");
-// require module that will deal with the database
-
-const connection = mysql.createConnection({
-  host: "localhost",
-  // Your MySQL username
-  user: "root",
-  // Your MySQL password
-  password: "Iaabmc88",
-  database: "employee_tracker_db",
-});
-
-connection.connect((err) => {
-  if (err) throw err;
-  console.log("connected as id " + connection.threadId + "\n");
-});
+const connection = require("./db/connection.js");
 
 const initialPrompt = function () {
   inquirer
@@ -62,6 +47,41 @@ const initialPrompt = function () {
     });
 };
 
+function dbCalls(answer) {
+  switch (answer) {
+    case "view all departments":
+      allDepartments();
+      break;
+    case "view all employees":
+      allEmployees();
+      break;
+    case "view all roles":
+      allRoles();
+      break;
+  }
+}
+
+function allDepartments() {
+  connection.query("SELECT * FROM department", function (err, results, fields) {
+    console.table(results);
+    initialPrompt();
+  });
+}
+
+function allRoles() {
+  connection.query("SELECT * FROM role", function (err, results, fields) {
+    console.table(results);
+    initialPrompt();
+  });
+}
+
+function allEmployees() {
+  connection.query("SELECT * FROM employees", function (err, results, fields) {
+    console.table(results);
+    initialPrompt();
+  });
+}
+
 async function updateEmployee() {
   connection.query("SELECT * FROM EMPLOYEES", async function (err, data) {
     console.log(data);
@@ -99,7 +119,6 @@ async function updateEmployee() {
 
 async function employeeAddPrompt() {
   connection.query(
-    // "SELECT employees.first_name, employees.last_name FROM employees INNER JOIN employees ON (employees.role_id = 1 OR employees.role_id = 2 OR employees.role_id = 3 OR employees.role_id = 4)",
     "SELECT employees.first_name, employees.last_name FROM employees WHERE employees.role_id = 1 OR employees.role_id = 2 OR employees.id = 3 OR employees.id = 4",
     await function (err, data) {
       if (err) throw err;
@@ -178,61 +197,23 @@ async function employeeAddPrompt() {
   );
 }
 
-function dbCalls(answer) {
-  switch (answer) {
-    case "view all departments":
-      allDepartments();
-      break;
-    case "view all employees":
-      allEmployees();
-      break;
-    case "view all roles":
-      allRoles();
-      break;
-  }
-}
-
-function allDepartments() {
-  connection.query("SELECT * FROM department", function (err, results, fields) {
-    console.table(results);
-    initialPrompt();
-  });
-}
-
-function allRoles() {
-  connection.query("SELECT * FROM role", function (err, results, fields) {
-    console.table(results);
-    initialPrompt();
-  });
-}
-
-function allEmployees() {
-  connection.query("SELECT * FROM employees", function (err, results, fields) {
-    console.table(results);
-    initialPrompt();
-  });
-}
-
 function departmentAdd(newData) {
   inquirer
-  .prompt({
-    type: "input",
-    name: "departmentAdd",
-    message: "What department would you like to add?",
-  })
-  .then((answer) => {
-  const sql = "INSERT INTO department (name) VALUES(?)";
-  const params = [answer.departmentAdd];
-  connection.query(sql, params, function (err, res, fields) {
-    if(err) throw err;
-    console.log(res.affectedRows + ' departments added!');
-    initialPrompt();
-  });
-    
-  });
+    .prompt({
+      type: "input",
+      name: "departmentAdd",
+      message: "What department would you like to add?",
+    })
+    .then((answer) => {
+      const sql = "INSERT INTO department (name) VALUES(?)";
+      const params = [answer.departmentAdd];
+      connection.query(sql, params, function (err, res, fields) {
+        if (err) throw err;
+        console.log(res.affectedRows + " departments added!");
+        initialPrompt();
+      });
+    });
 }
-
-// Process.exit?
 
 initialPrompt();
 
