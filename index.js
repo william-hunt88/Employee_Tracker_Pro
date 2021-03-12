@@ -1,9 +1,23 @@
 const inquirer = require("inquirer");
+const cTable = require("console.table");
+const mysql = require("mysql2");
 // require module that will deal with the database
-const myFunctions = require("./utils/dbCalls.js");
 
+const connection = mysql.createConnection({
+  host: "localhost",
+  // Your MySQL username
+  user: "root",
+  // Your MySQL password
+  password: "Iaabmc88",
+  database: "employee_tracker_db",
+});
 
-function initialPrompt() {
+connection.connect((err) => {
+  if (err) throw err;
+  console.log("connected as id " + connection.threadId + "\n");
+});
+
+const initialPrompt = function () {
   inquirer
     .prompt([
       {
@@ -24,16 +38,16 @@ function initialPrompt() {
     .then((answers) => {
       switch (answers.initial) {
         case "view all departments":
-          myFunctions.dbCall(answers.initial);
+          dbCalls(answers.initial);
           break;
         case "view all employees":
-          myFunctions.dbCall(answers.initial);
+          dbCalls(answers.initial);
           break;
         case "view all roles":
-          myFunctions.dbCall(answers.initial);
+          dbCalls(answers.initial);
           break;
         case "add a department":
-          departmentAddPrompt();
+          departmentAdd();
           break;
         case "add a role":
           roleAddPrompt();
@@ -42,23 +56,183 @@ function initialPrompt() {
           employeeAddPrompt();
           break;
         case "update an employee role":
-          updateEmployeePrompt();
+          updateEmployee();
           break;
       }
     });
+};
+
+async function updateEmployee() {
+  connection.query("SELECT * FROM EMPLOYEES", async function (err, data) {
+    console.log(data);
+    if (err) throw err;
+    var employeeChoices = data.map(({ id, first_name, last_name }) => {
+      return { name: `${first_name} ${last_name}`, value: id };
+    });
+    console.log(employeeChoices);
+    const { employeeId } = await inquirer.prompt({
+      type: "list",
+      name: "employeeId",
+      message: "Which employee would you like to update?",
+      choices: employeeChoices,
+    });
+    console.log(employeeId);
+    connection.query("SELECT * FROM role", async function (err, data) {
+      var roleChoices = data.map(({ id, title }) => {
+        return { name: title, value: id };
+      });
+      const { roleId } = await inquirer.prompt({
+        type: "list",
+        name: "roleId",
+        message: "Which role would you like to give the employee?",
+        choices: roleChoices,
+      });
+      console.log(roleId);
+      connection.query("UPDATE employees SET role_id = ? WHERE id = ?", [
+        roleId,
+        employeeId,
+      ]);
+      initialPrompt();
+    });
+  });
 }
 
-function departmentAddPrompt() {
-  inquirer
-    .prompt({
-      type: "input",
-      name: "departmentAdd",
-      message: "What department would you like to add?",
-    })
-    .then((answer) => {
-      myFunctions.addDepartmentDbCall(answer.departmentAdd);
-    });
+async function employeeAddPrompt() {
+  connection.query(
+    // "SELECT employees.first_name, employees.last_name FROM employees INNER JOIN employees ON (employees.role_id = 1 OR employees.role_id = 2 OR employees.role_id = 3 OR employees.role_id = 4)",
+    "SELECT employees.first_name, employees.last_name FROM employees WHERE employees.role_id = 1 OR employees.role_id = 2 OR employees.id = 3 OR employees.id = 4",
+    await function (err, data) {
+      if (err) throw err;
+      // data contains first and last name of managers (role_id = 1,2,3,or 4)
+      var managerChoices = data.map(({ first_name, last_name }) => {
+        return { name: `${first_name} ${last_name}` };
+      });
+      connection.query("SELECT * FROM role", async function (err, data) {
+        var roleChoices = data.map(({ id, title }) => {
+          return { name: title, value: id };
+        });
+        inquirer
+          .prompt([
+            {
+              type: "input",
+              name: "first_name",
+              message: "What is the employees first name?",
+            },
+            {
+              type: "input",
+              name: "last_name",
+              message: "What is the employees last name?",
+            },
+            {
+              type: "list",
+              name: "role_id",
+              message: "What is the new employees role?",
+              choices: roleChoices,
+            },
+            {
+              type: "list",
+              name: "manager",
+              message: "Who is the employees manager?",
+              choices: managerChoices,
+            },
+          ])
+          .then((answers) => {
+            let managerName = answers.manager.split(" ");
+            console.log(managerName[0]);
+            connection.query(
+              "SELECT * FROM employees WHERE first_name = ? AND last_name = ?",
+              [managerName[0], managerName[1]],
+              async function (err, data) {
+                if (err) throw err;
+                var manager = data.map(
+                  ({ first_name, last_name, role_id, manager_id }) => {
+                    return {
+                      first_name: `${first_name}`,
+                      last_name: `${last_name}`,
+                      role_id: `${role_id}`,
+                      manager_id: `${manager_id}`,
+                    };
+                  }
+                );
+                console.log(manager[0].role_id);
+                console.log(answers.first_name);
+                connection.query(
+                  "INSERT INTO employees SET ?",
+                  {
+                    first_name: answers.first_name,
+                    last_name: answers.last_name,
+                    role_id: answers.role_id,
+                    manager_id: manager[0].role_id,
+                  },
+                  function (err, res) {
+                    if (err) throw err;
+                    console.log(res.affectedRows + " employee inserted!");
+                    initialPrompt();
+                  }
+                );
+              }
+            );
+          });
+      });
+    }
+  );
 }
+
+function dbCalls(answer) {
+  switch (answer) {
+    case "view all departments":
+      allDepartments();
+      break;
+    case "view all employees":
+      allEmployees();
+      break;
+    case "view all roles":
+      allRoles();
+      break;
+  }
+}
+
+function allDepartments() {
+  connection.query("SELECT * FROM department", function (err, results, fields) {
+    console.table(results);
+    initialPrompt();
+  });
+}
+
+function allRoles() {
+  connection.query("SELECT * FROM role", function (err, results, fields) {
+    console.table(results);
+    initialPrompt();
+  });
+}
+
+function allEmployees() {
+  connection.query("SELECT * FROM employees", function (err, results, fields) {
+    console.table(results);
+    initialPrompt();
+  });
+}
+
+function departmentAdd(newData) {
+  inquirer
+  .prompt({
+    type: "input",
+    name: "departmentAdd",
+    message: "What department would you like to add?",
+  })
+  .then((answer) => {
+  const sql = "INSERT INTO department (name) VALUES(?)";
+  const params = [answer.departmentAdd];
+  connection.query(sql, params, function (err, res, fields) {
+    if(err) throw err;
+    console.log(res.affectedRows + ' departments added!');
+    initialPrompt();
+  });
+    
+  });
+}
+
+// Process.exit?
 
 initialPrompt();
 
