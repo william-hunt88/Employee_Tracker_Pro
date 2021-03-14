@@ -1,7 +1,7 @@
+USE employee_tracker_db;
 DROP TABLE IF EXISTS employees;
 DROP TABLE IF EXISTS role;
 DROP TABLE IF EXISTS department;
-USE employee_tracker_db;
 
 
 CREATE TABLE employees (
