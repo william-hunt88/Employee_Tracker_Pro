@@ -19,7 +19,7 @@
   Star by cloning this repos main branch. Once in your command line at the root folder, run npm install. Next, you will navigate to db/connection.js and replace the "returnPassword" variable with your own MySQL password. After that all you need to do is answer the prompts to keep up with your employees!
 
   ### Usage
-  https://youtu.be/k54rnm_eBJA
+  [![](http://img.youtube.com/vi/k54rnm_eBJA/0.jpg)](http://www.youtube.com/watch?v=k54rnm_eBJA "demo video")
 
   ### Contributions
   Contributions are welcome!
