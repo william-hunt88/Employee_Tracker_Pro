@@ -1,4 +1,5 @@
 const mysql = require("mysql2");
+const returnPassword = require('../configuration/configuration')
 
 
 const connection = mysql.createConnection({
@@ -6,7 +7,7 @@ const connection = mysql.createConnection({
     // Your MySQL username
     user: "root",
     // Your MySQL password
-    password: "Iaabmc88",
+    password: returnPassword,
     database: "employee_tracker_db",
   });
   
