@@ -4,22 +4,20 @@ const connection = require("./db/connection.js");
 
 const initialPrompt = function () {
   inquirer
-    .prompt([
-      {
-        type: "list",
-        name: "initial",
-        message: "What would you like to do?",
-        choices: [
-          "view all departments",
-          "view all roles",
-          "view all employees",
-          "add a department",
-          "add a role",
-          "add an employee",
-          "update an employee role",
-        ],
-      },
-    ])
+    .prompt({
+      type: "list",
+      name: "initial",
+      message: "What would you like to do?",
+      choices: [
+        "view all departments",
+        "view all roles",
+        "view all employees",
+        "add a department",
+        "add a role",
+        "add an employee",
+        "update an employee role",
+      ],
+    })
     .then((answers) => {
       switch (answers.initial) {
         case "view all departments":
@@ -49,6 +47,7 @@ const initialPrompt = function () {
 
 function allDepartments() {
   connection.query("SELECT * FROM department", function (err, results, fields) {
+    if (err) throw err;
     console.table(results);
     initialPrompt();
   });
@@ -56,6 +55,7 @@ function allDepartments() {
 
 function allRoles() {
   connection.query("SELECT * FROM role", function (err, results, fields) {
+    if (err) throw err;
     console.table(results);
     initialPrompt();
   });
@@ -63,6 +63,7 @@ function allRoles() {
 
 function allEmployees() {
   connection.query("SELECT * FROM employees", function (err, results, fields) {
+    if (err) throw err;
     console.table(results);
     initialPrompt();
   });
@@ -154,10 +155,14 @@ async function updateEmployee() {
         message: "Which role would you like to give the employee?",
         choices: roleChoices,
       });
-      connection.query("UPDATE employees SET role_id = ? WHERE id = ?", [
-        roleId,
-        employeeId,
-      ]);
+      connection.query(
+        "UPDATE employees SET role_id = ? WHERE id = ?",
+        [roleId, employeeId],
+        function (err, res) {
+          if (err) throw err;
+          console.log(res.affectedRows + " employee updated");
+        }
+      );
       initialPrompt();
     });
   });
@@ -165,6 +170,7 @@ async function updateEmployee() {
 
 async function employeeAddPrompt() {
   connection.query(
+    // SELECT query drawing role_id's 1-4 which correspond with managers
     "SELECT employees.first_name, employees.last_name FROM employees WHERE employees.role_id = 1 OR employees.role_id = 2 OR employees.id = 3 OR employees.id = 4",
     await function (err, data) {
       if (err) throw err;
@@ -210,24 +216,19 @@ async function employeeAddPrompt() {
               [managerName[0], managerName[1]],
               async function (err, data) {
                 if (err) throw err;
-                // create new employee object for INSERT statement
-                var manager = data.map(
-                  ({ first_name, last_name, role_id, manager_id }) => {
-                    return {
-                      first_name: `${first_name}`,
-                      last_name: `${last_name}`,
-                      role_id: `${role_id}`,
-                      manager_id: `${manager_id}`,
-                    };
-                  }
-                );
+                // create manager constant to extract manager id for new employee
+                var manager = data.map(({ id }) => {
+                  return {
+                    id: `${id}`,
+                  };
+                });
                 connection.query(
                   "INSERT INTO employees SET ?",
                   {
                     first_name: answers.first_name,
                     last_name: answers.last_name,
                     role_id: answers.role_id,
-                    manager_id: manager[0].role_id,
+                    manager_id: manager[0].id,
                   },
                   function (err, res) {
                     if (err) throw err;
@@ -244,21 +245,3 @@ async function employeeAddPrompt() {
 }
 
 initialPrompt();
-
-// GIVEN a command-line application that accepts user input
-// WHEN I start the application
-// THEN I am presented with the following options: view all departments, view all roles, view all employees, add a department, add a role, add an employee, and update an employee role
-// WHEN I choose to view all departments
-// THEN I am presented with a formatted table showing department names and department ids
-// WHEN I choose to view all roles
-// THEN I am presented with the job title, role id, the department that role belongs to, and the salary for that role
-// WHEN I choose to view all employees
-// THEN I am presented with a formatted table showing employee data, including employee ids, first names, last names, job titles, departments, salaries, and managers that the employees report to
-// WHEN I choose to add a department
-// THEN I am prompted to enter the name of the department and that department is added to the database
-// WHEN I choose to add a role
-// THEN I am prompted to enter the name, salary, and department for the role and that role is added to the database
-// WHEN I choose to add an employee
-// THEN I am prompted to enter the employee’s first name, last name, role, and manager and that employee is added to the database
-// WHEN I choose to update an employee role
-// THEN I am prompted to select an employee to update and their new role and this information is updated in the database

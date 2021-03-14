@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "migrate": "source schema.sql",
-    "db": "mysql -u root -p"
+    "db": "mysql -u root -p",
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",
